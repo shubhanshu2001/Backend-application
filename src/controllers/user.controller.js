@@ -50,8 +50,13 @@ const registerUser = asyncHandler( async (req, res) => {
   }
 
   // extract local paths
-  const avatarLocalPath = req.files?.avatar[0]?.path;
+  // const avatarLocalPath = req.files?.avatar[0]?.path;
   // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  let avatarLocalPath;
+  if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0){
+    avatarLocalPath = req.files.avatar[0].path;
+  }
 
   let coverImageLocalPath;
   if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
@@ -173,8 +178,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id, 
     {
-      $set: {
-        refreshToken: undefined
+      $unset: {
+        refreshToken: 1
       } 
     },
     {
@@ -197,7 +202,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.authorization
+  const incomingRefreshToken = req.cookies?.refreshToken || req.body?.authorization
 
   if(!incomingRefreshToken){
     throw new ApiError(401, "unauthorizes request")
